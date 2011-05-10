@@ -1,0 +1,11 @@
+import os
+source = ['kinect_demo.cpp']
+libs = ['OryxEngine','KinectSubsystem']
+if os.name == 'nt':
+	env = Environment(ENV=os.environ,tools=['mingw','g++'],CXX=['g++'],CPPDEFINES=['WIN32'])
+	env['ENV']['LD_RUN_PATH']='.'
+	env.Program('kinect_demo',source,CPPPATH=['../src','../../OryxEngine/src'],LIBS=libs)
+else:
+	env = Environment();
+	env['ENV']['LD_RUN_PATH']='.'
+	env.Program('kinect_demo',source,CPPPATH=['../src','../../OryxEngine/src'],LIBS=libs)

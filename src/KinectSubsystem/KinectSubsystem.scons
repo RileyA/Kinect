@@ -1,0 +1,3 @@
+source = ['Kinectdllmain.cpp','KinectSubsystem.cpp']
+env = Environment(CPPDEFINES=['BUILD_KINECT_DLL','LINUX'])
+env.SharedLibrary('KinectSubsystem', source ,CPPPATH=['../src','../../OryxEngine/src','../../../OpenKinect/libfreenect/include'],LIBPATH='../bin',LIBS=['OryxEngine','freenect'])

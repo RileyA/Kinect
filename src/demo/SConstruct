@@ -1,0 +1,1 @@
+SConscript('kinect_demo.scons',variant_dir='../../bin',src='.',duplicate=0)
