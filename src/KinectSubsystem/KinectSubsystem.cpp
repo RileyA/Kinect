@@ -20,6 +20,7 @@
 #include "Oryx.h"
 #include "KinectSubsystem.h"
 #include "OryxLogger.h"
+#include "OryxEngine.h"
 #include "OryxTimeManager.h"
 #include "libfreenect.h"
 
@@ -27,12 +28,14 @@ namespace Oryx
 {
 	void depthCallback(freenect_device *dev, void *v_depth, uint32_t timestamp)
 	{
-		
+		Engine::getPtr()->getSubsystem("KinectSubsystem")->
+			castType<KinectSubsystem>()->depthCallback(dev, v_depth, timestamp);
 	}
 
 	void colorCallback(freenect_device *dev, void *rgb, uint32_t timestamp)
 	{
-
+		Engine::getPtr()->getSubsystem("KinectSubsystem")->
+			castType<KinectSubsystem>()->colorCallback(dev, rgb, timestamp);
 	}
 
 	KinectSubsystem::KinectSubsystem()
@@ -74,14 +77,16 @@ namespace Oryx
 					// set up the device (this should be broekn into a separate class/file at some point...
 					freenect_set_tilt_degs(mDevice, 0);
 					freenect_set_led(mDevice,LED_RED);
-					//freenect_set_depth_callback(mDevice, depth_cb);
-					//freenect_set_video_callback(mDevice, rgb_cb);
-					freenect_set_video_mode(mDevice, freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_VIDEO_RGB));
-					freenect_set_depth_mode(mDevice, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_DEPTH_11BIT));
+					freenect_set_depth_callback(mDevice, Oryx::depthCallback);
+					freenect_set_video_callback(mDevice, Oryx::colorCallback);
+					freenect_set_video_mode(mDevice, freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, 
+						FREENECT_VIDEO_RGB));
+					freenect_set_depth_mode(mDevice, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, 
+						FREENECT_DEPTH_11BIT));
 					freenect_set_video_buffer(mDevice, mColorBuffer_0);
 					freenect_set_depth_buffer(mDevice, mDepthBuffer_0);
-					//freenect_start_depth(mDevice);
-					//freenect_start_video(mDevice);
+					freenect_start_depth(mDevice);
+					freenect_start_video(mDevice);
 				}
 			}
 			else
@@ -100,6 +105,7 @@ namespace Oryx
     {
         if(mInitialized)
         {
+			// dump depth data to the stream
             mInitialized = false;
             Logger::getPtr()->logMessage("Kinect Subsystem Deinitialized.");
         }
@@ -108,7 +114,12 @@ namespace Oryx
 
     void KinectSubsystem::_update(Real delta)
     {
-
+		// do stuff here....
+		if(!mInitialized || freenect_process_events(mContext) < 0)
+		{
+			Logger::getPtr()->logMessage("Kinect stopped processing events...");
+			Engine::getPtr()->endCurrentState();
+		}
     }
     //-----------------------------------------------------------------------
 
@@ -124,13 +135,13 @@ namespace Oryx
     }
     //-----------------------------------------------------------------------
 
-	void depthCallback(freenect_device* device, void *data, uint32_t time)
+	void KinectSubsystem::depthCallback(freenect_device* device, void *data, uint32_t time)
 	{
-
+		
 	}
 	//-----------------------------------------------------------------------
 
-	void colorCallback(freenect_device* device, void *data, uint32_t time)
+	void KinectSubsystem::colorCallback(freenect_device* device, void *data, uint32_t time)
 	{
 
 	}

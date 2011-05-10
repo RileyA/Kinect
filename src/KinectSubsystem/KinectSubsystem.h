@@ -46,10 +46,10 @@ namespace Oryx
 
         virtual String getName();
 
-    protected:
-
 		void depthCallback(freenect_device* device, void *data, uint32_t time);
 		void colorCallback(freenect_device* device, void *data, uint32_t time);
+	
+    protected:
 
         bool mInitialized;
 		freenect_context* mContext;

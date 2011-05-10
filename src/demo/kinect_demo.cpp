@@ -44,9 +44,11 @@ int main(int argc, char** argv)
 
 	// create subsystems:
 	KinectSubsystem kin = KinectSubsystem();
+	SDLSubsystem kin = SDLSubsystem();
 
 	// allocate engine and add subsystems
 	Engine* eng = new Engine();
+	eng->addSubsystem(&kin);
 	eng->addSubsystem(&kin);
 
 	// initialize the engine
