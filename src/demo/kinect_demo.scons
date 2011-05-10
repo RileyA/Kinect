@@ -1,6 +1,6 @@
 import os
 source = ['kinect_demo.cpp']
-libs = ['OryxEngine','KinectSubsystem']
+libs = ['OryxEngine','KinectSubsystem','SDLSubsystem']
 if os.name == 'nt':
 	env = Environment(ENV=os.environ,tools=['mingw','g++'],CXX=['g++'],CPPDEFINES=['WIN32'])
 	env['ENV']['LD_RUN_PATH']='.'

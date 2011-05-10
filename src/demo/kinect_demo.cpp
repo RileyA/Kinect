@@ -7,6 +7,8 @@ public:
 	TestState()
 	{
 		mKinect = mEngine->getSubsystem("KinectSubsystem")->castType<KinectSubsystem>();
+		mSDL = mEngine->getSubsystem("SDLSubsystem")->castType<SDLSubsystem>();
+		mSDL->setManual(true);
 	}
 
 	~TestState()
@@ -27,6 +29,9 @@ public:
 	virtual void update(Real delta)
 	{
 		// ...
+
+		mSDL->drawRaw(mKinect->getRawColor());
+
 		if(TimeManager::getPtr()->getTimeDecimal() > 3.f)
 			mEngine->endCurrentState();
 	}
@@ -34,6 +39,7 @@ public:
 private:
 
 	KinectSubsystem* mKinect;
+	SDLSubsystem* mSDL;
 
 };
 
@@ -44,12 +50,12 @@ int main(int argc, char** argv)
 
 	// create subsystems:
 	KinectSubsystem kin = KinectSubsystem();
-	SDLSubsystem kin = SDLSubsystem();
+	SDLSubsystem sdl = SDLSubsystem();
 
 	// allocate engine and add subsystems
 	Engine* eng = new Engine();
 	eng->addSubsystem(&kin);
-	eng->addSubsystem(&kin);
+	eng->addSubsystem(&sdl);
 
 	// initialize the engine
 	eng->init();

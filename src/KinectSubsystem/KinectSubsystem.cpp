@@ -1,22 +1,3 @@
-//---------------------------------------------------------------------------
-//(C) Copyright Riley Adams 2010-2011
-
-//This file is part of Oryx Engine.
-
-// Oryx Engine is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// Oryx Engine is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Oryx Engine. If not, see <http://www.gnu.org/licenses/>.
-//---------------------------------------------------------------------------
-
 #include "Oryx.h"
 #include "KinectSubsystem.h"
 #include "OryxLogger.h"
@@ -74,7 +55,7 @@ namespace Oryx
 					memset(mColorBuffer_0, (byte)0, sizeof(mColorBuffer_0));
 					memset(mColorBuffer_1, (byte)0, sizeof(mColorBuffer_1));
 
-					// set up the device (this should be broekn into a separate class/file at some point...
+					// set up the device (this should be broken into a separate class/file at some point...
 					freenect_set_tilt_degs(mDevice, 0);
 					freenect_set_led(mDevice,LED_RED);
 					freenect_set_depth_callback(mDevice, Oryx::depthCallback);
@@ -144,6 +125,18 @@ namespace Oryx
 	void KinectSubsystem::colorCallback(freenect_device* device, void *data, uint32_t time)
 	{
 
+	}
+	//-----------------------------------------------------------------------
+
+	byte* KinectSubsystem::getRawDepth()
+	{
+		return &mDepthBuffer_0[0][0][0];
+	}
+	//-----------------------------------------------------------------------
+	
+	byte* KinectSubsystem::getRawColor()
+	{
+		return &mColorBuffer_0[0][0][0];
 	}
 	//-----------------------------------------------------------------------
 }
