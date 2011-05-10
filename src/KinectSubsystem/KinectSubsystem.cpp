@@ -50,10 +50,8 @@ namespace Oryx
 				else
 				{
 					// clear these out to begin with
-					memset(mDepthBuffer_0, (byte)0, sizeof(mDepthBuffer_0));
-					memset(mDepthBuffer_1, (byte)0, sizeof(mDepthBuffer_1));
-					memset(mColorBuffer_0, (byte)0, sizeof(mColorBuffer_0));
-					memset(mColorBuffer_1, (byte)0, sizeof(mColorBuffer_1));
+					memset(mDepthBuffer, (byte)0, sizeof(mDepthBuffer));
+					memset(mColorBuffer, (byte)0, sizeof(mColorBuffer));
 
 					// set up the device (this should be broken into a separate class/file at some point...
 					freenect_set_tilt_degs(mDevice, 0);
@@ -64,8 +62,8 @@ namespace Oryx
 						FREENECT_VIDEO_RGB));
 					freenect_set_depth_mode(mDevice, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, 
 						FREENECT_DEPTH_11BIT));
-					freenect_set_video_buffer(mDevice, mColorBuffer_0);
-					freenect_set_depth_buffer(mDevice, mDepthBuffer_0);
+					freenect_set_video_buffer(mDevice, mColorBuffer);
+					freenect_set_depth_buffer(mDevice, mDepthBuffer);
 					freenect_start_depth(mDevice);
 					freenect_start_video(mDevice);
 				}
@@ -130,13 +128,13 @@ namespace Oryx
 
 	byte* KinectSubsystem::getRawDepth()
 	{
-		return &mDepthBuffer_0[0][0][0];
+		return &mDepthBuffer[0][0][0];
 	}
 	//-----------------------------------------------------------------------
 	
 	byte* KinectSubsystem::getRawColor()
 	{
-		return &mColorBuffer_0[0][0][0];
+		return &mColorBuffer[0][0][0];
 	}
 	//-----------------------------------------------------------------------
 }

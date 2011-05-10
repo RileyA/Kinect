@@ -42,10 +42,8 @@ namespace Oryx
 		freenect_device* mDevice;
 
 		// vidya buffers
-		byte mDepthBuffer_0[640][480][3];
-		byte mDepthBuffer_1[640][480][3];
-		byte mColorBuffer_0[640][480][3];
-		byte mColorBuffer_1[640][480][3];
+		byte mDepthBuffer[640][480][3];
+		byte mColorBuffer[640][480][3];
 
     };
 }
