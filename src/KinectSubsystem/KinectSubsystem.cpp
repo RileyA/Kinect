@@ -34,16 +34,16 @@ namespace Oryx
 	//-----------------------------------------------------------------------
 
 	KinectSubsystem::~KinectSubsystem()
-    {
-    }
-    //-----------------------------------------------------------------------
+	{
+	}
+	//-----------------------------------------------------------------------
 
-    void KinectSubsystem::_init()
-    {
-        if(!mInitialized)
-        {
-            mInitialized = true;
-            Logger::getPtr()->logMessage("Kinect Subsystem Starting...");
+	void KinectSubsystem::_init()
+	{
+		if(!mInitialized)
+		{
+			mInitialized = true;
+			Logger::getPtr()->logMessage("Kinect Subsystem Starting...");
 
 			if(freenect_init(&mContext, 0) >= 0)
 			{
@@ -98,17 +98,17 @@ namespace Oryx
 				Logger::getPtr()->logMessage("Kinect init failed!");
 			}
 
-            if(mInitialized)
+			if(mInitialized)
 				Logger::getPtr()->logMessage("Kinect Subsystem Initialized.");
-        }
-    }
-    //-----------------------------------------------------------------------
+		}
+	}
+	//-----------------------------------------------------------------------
 
-    void KinectSubsystem::_deinit()
-    {
-        if(mInitialized)
-        {
-            Logger::getPtr()->logMessage("Shutting down Kinect Subsystem...");
+	void KinectSubsystem::_deinit()
+	{
+		if(mInitialized)
+		{
+			Logger::getPtr()->logMessage("Shutting down Kinect Subsystem...");
 
 			// random cleanup
 			freenect_stop_video(mDevice);
@@ -116,33 +116,33 @@ namespace Oryx
 			freenect_close_device(mDevice);
 			freenect_shutdown(mContext);
 
-            mInitialized = false;
-            Logger::getPtr()->logMessage("Kinect Subsystem Deinitialized.");
-        }
-    }
-    //-----------------------------------------------------------------------
+			mInitialized = false;
+			Logger::getPtr()->logMessage("Kinect Subsystem Deinitialized.");
+		}
+	}
+	//-----------------------------------------------------------------------
 
-    void KinectSubsystem::_update(Real delta)
-    {
+	void KinectSubsystem::_update(Real delta)
+	{
 		if(!mInitialized || freenect_process_events(mContext) < 0)
 		{
 			// just exit if it stops processing events, or failed to init properly
 			Engine::getPtr()->endCurrentState();
 		}
-    }
-    //-----------------------------------------------------------------------
+	}
+	//-----------------------------------------------------------------------
 
-    void KinectSubsystem::_endState()
-    {
+	void KinectSubsystem::_endState()
+	{
 
-    }
-    //-----------------------------------------------------------------------
+	}
+	//-----------------------------------------------------------------------
 
-    String KinectSubsystem::getName()
-    {
-        return String("KinectSubsystem");
-    }
-    //-----------------------------------------------------------------------
+	String KinectSubsystem::getName()
+	{
+		return String("KinectSubsystem");
+	}
+	//-----------------------------------------------------------------------
 
 	void KinectSubsystem::depthCallback(freenect_device* device, void *data, uint32_t time)
 	{

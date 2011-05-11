@@ -13,19 +13,19 @@ namespace Oryx
 	void depthCallback(freenect_device *dev, void *v_depth, uint32_t timestamp);
 	void colorCallback(freenect_device *dev, void *rgb, uint32_t timestamp);
 
-    class ORYX_KINECT_EXPORT KinectSubsystem : public EngineSubsystem
-    {
-    public:
+	class ORYX_KINECT_EXPORT KinectSubsystem : public EngineSubsystem
+	{
+	public:
 
-        KinectSubsystem();
-        ~KinectSubsystem();
+		KinectSubsystem();
+		~KinectSubsystem();
 
-        virtual void _init();
-        virtual void _deinit();
-        virtual void _update(Real delta);
-        virtual void _endState();
+		virtual void _init();
+		virtual void _deinit();
+		virtual void _update(Real delta);
+		virtual void _endState();
 
-        virtual String getName();
+		virtual String getName();
 
 		void depthCallback(freenect_device* device, void *data, uint32_t time);
 		void colorCallback(freenect_device* device, void *data, uint32_t time);
@@ -33,9 +33,9 @@ namespace Oryx
 		byte* getRawDepth();
 		byte* getRawColor();
 	
-    protected:
+	protected:
 
-        bool mInitialized;
+		bool mInitialized;
 		freenect_context* mContext;
 
 		// stuff for the device (should be split into its own class at some point
@@ -47,7 +47,7 @@ namespace Oryx
 
 		uint16_t mGamma[2048];
 
-    };
+	};
 }
 
 #endif
