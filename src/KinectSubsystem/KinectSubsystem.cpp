@@ -22,12 +22,14 @@ namespace Oryx
 	KinectSubsystem::KinectSubsystem()
 		:mContext(0) 
 	{
-		for (int i=0; i<2048; i++) 
-		{
-			float v = i/2048.0;
-			v = powf(v, 3)* 6;
-			mGamma[i] = v*6*256;
-		}
+		// magical copy pasta from libfreenect's gltest
+		// used for turning the raw depth data into nice colorful output
+		//for (int i=0; i<2048; i++) 
+		//{
+		//	float v = i/2048.0;
+		//	v = powf(v, 3)* 6;
+		//	mGamma[i] = v*6*256;
+		//}
 	}
 	//-----------------------------------------------------------------------
 
@@ -45,13 +47,16 @@ namespace Oryx
 
 			if(freenect_init(&mContext, 0) >= 0)
 			{
+				// more verbose log-age
 				freenect_set_log_level(mContext, FREENECT_LOG_DEBUG);
 
+				// look for devices
 				int nrDevices = freenect_num_devices(mContext);
 				Logger::getPtr()->logMessage("Found "+StringUtils::toString(nrDevices)+" devices.");
 
 				// TODO: do device stuff in a separate class
 
+				// If there aren't any devices, or the first device fails to open, then abort
 				if(nrDevices < 0 || freenect_open_device(mContext, &mDevice, 0) < 0)
 				{
 					mInitialized = false;
@@ -63,7 +68,7 @@ namespace Oryx
 					memset(mDepthBuffer, (byte)0, sizeof(mDepthBuffer));
 					memset(mColorBuffer, (byte)0, sizeof(mColorBuffer));
 
-					// set the title (dunno how exactly this will work on the real thing...)
+					// set the tilt (dunno how exactly this will work on the real thing...)
 					freenect_set_tilt_degs(mDevice, 0);
 
 					// ooooh, it has an LED!
@@ -73,7 +78,7 @@ namespace Oryx
 					freenect_set_depth_callback(mDevice, Oryx::depthCallback);
 					freenect_set_video_callback(mDevice, Oryx::colorCallback);
 					
-					// setup device's depth modes
+					// setup depth/color modes
 					freenect_set_video_mode(mDevice, freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, 
 						FREENECT_VIDEO_RGB));
 					freenect_set_depth_mode(mDevice, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, 
@@ -105,6 +110,7 @@ namespace Oryx
         {
             Logger::getPtr()->logMessage("Shutting down Kinect Subsystem...");
 
+			// random cleanup
 			freenect_stop_video(mDevice);
 			freenect_stop_depth(mDevice);
 			freenect_close_device(mDevice);
@@ -118,10 +124,9 @@ namespace Oryx
 
     void KinectSubsystem::_update(Real delta)
     {
-		// do stuff here....
 		if(!mInitialized || freenect_process_events(mContext) < 0)
 		{
-			Logger::getPtr()->logMessage("Kinect stopped processing events...");
+			// just exit if it stops processing events, or failed to init properly
 			Engine::getPtr()->endCurrentState();
 		}
     }

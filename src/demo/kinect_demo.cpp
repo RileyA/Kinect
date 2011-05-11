@@ -18,7 +18,7 @@ public:
 
 	virtual void init()
 	{
-		// do stuff
+		// ...
 	}
 
 	virtual void deinit()
@@ -28,11 +28,11 @@ public:
 
 	virtual void update(Real delta)
 	{
-		// ...
-
+		// draw kinect data to the SDL surface
 		mSDL->drawRaw(mKinect->getRawDepth());
 		mSDL->drawRaw(mKinect->getRawColor(),640,0);
 
+		// exit after 30secs, since I don't have any input set up...
 		if(TimeManager::getPtr()->getTimeDecimal() > 30.f)
 			mEngine->endCurrentState();
 	}
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 	// initialize the engine
 	eng->init();
 
-	// add the menu state to the stack
+	// add the test state to the deque
 	eng->addState(new TestState);
 
 	// start up the engine
