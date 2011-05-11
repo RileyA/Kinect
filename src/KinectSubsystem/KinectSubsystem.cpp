@@ -50,6 +50,8 @@ namespace Oryx
 				int nrDevices = freenect_num_devices(mContext);
 				Logger::getPtr()->logMessage("Found "+StringUtils::toString(nrDevices)+" devices.");
 
+				// TODO: do device stuff in a separate class
+
 				if(nrDevices < 0 || freenect_open_device(mContext, &mDevice, 0) < 0)
 				{
 					mInitialized = false;
@@ -61,17 +63,26 @@ namespace Oryx
 					memset(mDepthBuffer, (byte)0, sizeof(mDepthBuffer));
 					memset(mColorBuffer, (byte)0, sizeof(mColorBuffer));
 
-					// set up the device (this should be broken into a separate class/file at some point...
+					// set the title (dunno how exactly this will work on the real thing...)
 					freenect_set_tilt_degs(mDevice, 0);
-					freenect_set_led(mDevice,LED_RED);
+
+					// ooooh, it has an LED!
+					// freenect_set_led(mDevice,LED_RED);
+
+					// register callbacks
 					freenect_set_depth_callback(mDevice, Oryx::depthCallback);
 					freenect_set_video_callback(mDevice, Oryx::colorCallback);
+					
+					// setup device's depth modes
 					freenect_set_video_mode(mDevice, freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, 
 						FREENECT_VIDEO_RGB));
 					freenect_set_depth_mode(mDevice, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, 
 						FREENECT_DEPTH_11BIT));
+
+					// set the buffer to use for video
 					freenect_set_video_buffer(mDevice, mColorBuffer);
-					//freenect_set_depth_buffer(mDevice, depthbuf);
+
+					// start 'em up
 					freenect_start_depth(mDevice);
 					freenect_start_video(mDevice);
 				}
@@ -92,6 +103,13 @@ namespace Oryx
     {
         if(mInitialized)
         {
+            Logger::getPtr()->logMessage("Shutting down Kinect Subsystem...");
+
+			freenect_stop_video(mDevice);
+			freenect_stop_depth(mDevice);
+			freenect_close_device(mDevice);
+			freenect_shutdown(mContext);
+
             mInitialized = false;
             Logger::getPtr()->logMessage("Kinect Subsystem Deinitialized.");
         }
