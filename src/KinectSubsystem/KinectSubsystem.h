@@ -45,6 +45,8 @@ namespace Oryx
 		byte mDepthBuffer[640][480][3];
 		byte mColorBuffer[640][480][3];
 
+		uint16_t mGamma[2048];
+
     };
 }
 

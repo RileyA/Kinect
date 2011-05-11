@@ -30,9 +30,10 @@ public:
 	{
 		// ...
 
-		mSDL->drawRaw(mKinect->getRawColor());
+		mSDL->drawRaw(mKinect->getRawDepth());
+		mSDL->drawRaw(mKinect->getRawColor(),640,0);
 
-		if(TimeManager::getPtr()->getTimeDecimal() > 3.f)
+		if(TimeManager::getPtr()->getTimeDecimal() > 30.f)
 			mEngine->endCurrentState();
 	}
 
@@ -50,7 +51,7 @@ int main(int argc, char** argv)
 
 	// create subsystems:
 	KinectSubsystem kin = KinectSubsystem();
-	SDLSubsystem sdl = SDLSubsystem();
+	SDLSubsystem sdl = SDLSubsystem(640*2, 480);
 
 	// allocate engine and add subsystems
 	Engine* eng = new Engine();

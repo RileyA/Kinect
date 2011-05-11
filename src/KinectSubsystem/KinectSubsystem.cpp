@@ -20,7 +20,15 @@ namespace Oryx
 	}
 
 	KinectSubsystem::KinectSubsystem()
-		:mContext(0) {}
+		:mContext(0) 
+	{
+		for (int i=0; i<2048; i++) 
+		{
+			float v = i/2048.0;
+			v = powf(v, 3)* 6;
+			mGamma[i] = v*6*256;
+		}
+	}
 	//-----------------------------------------------------------------------
 
     KinectSubsystem::~KinectSubsystem()
@@ -63,7 +71,7 @@ namespace Oryx
 					freenect_set_depth_mode(mDevice, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, 
 						FREENECT_DEPTH_11BIT));
 					freenect_set_video_buffer(mDevice, mColorBuffer);
-					freenect_set_depth_buffer(mDevice, mDepthBuffer);
+					//freenect_set_depth_buffer(mDevice, depthbuf);
 					freenect_start_depth(mDevice);
 					freenect_start_video(mDevice);
 				}
@@ -84,7 +92,6 @@ namespace Oryx
     {
         if(mInitialized)
         {
-			// dump depth data to the stream
             mInitialized = false;
             Logger::getPtr()->logMessage("Kinect Subsystem Deinitialized.");
         }
@@ -116,7 +123,69 @@ namespace Oryx
 
 	void KinectSubsystem::depthCallback(freenect_device* device, void *data, uint32_t time)
 	{
-		
+		// depth comes as an 11 bit value (I think?)
+		uint16_t *depth = (uint16_t*)data;
+
+		byte* depthbuf = &mDepthBuffer[0][0][0];
+
+		for(int i=0; i<640*480; i++) 
+		{
+			// scale into 0-255
+			byte dep = static_cast<byte>(depth[i]/2047.f * 255.f);
+
+			// distance approximation in meters
+			//float distance = 0.1236 * tan(depth[i] / 2842.5 + 1.1863);
+			//byte dep = (std::min(distance, 5.f) / 5.f) * 255;
+
+			// smear over all the channels...
+			depthbuf[3*i+0] = dep;
+			depthbuf[3*i+1] = dep;
+			depthbuf[3*i+2] = dep;
+
+			// the following was nabbed from the gltest example from freenect, and
+			// formats the 11-bit depth data in a nice colorful format
+			/*int pval = mGamma[depth[i]];
+			int lb = pval & 0xff;
+			
+			switch (pval>>8) 
+			{
+				case 0:
+					depthbuf[3*i+0] = 255;
+					depthbuf[3*i+1] = 255-lb;
+					depthbuf[3*i+2] = 255-lb;
+					break;
+				case 1:
+					depthbuf[3*i+0] = 255;
+					depthbuf[3*i+1] = lb;
+					depthbuf[3*i+2] = 0;
+					break;
+				case 2:
+					depthbuf[3*i+0] = 255-lb;
+					depthbuf[3*i+1] = 255;
+					depthbuf[3*i+2] = 0;
+					break;
+				case 3:
+					depthbuf[3*i+0] = 0;
+					depthbuf[3*i+1] = 255;
+					depthbuf[3*i+2] = lb;
+					break;
+				case 4:
+					depthbuf[3*i+0] = 0;
+					depthbuf[3*i+1] = 255-lb;
+					depthbuf[3*i+2] = 255;
+					break;
+				case 5:
+					depthbuf[3*i+0] = 0;
+					depthbuf[3*i+1] = 0;
+					depthbuf[3*i+2] = 255-lb;
+					break;
+				default:
+					depthbuf[3*i+0] = 0;
+					depthbuf[3*i+1] = 0;
+					depthbuf[3*i+2] = 0;
+					break;
+			}*/
+		}
 	}
 	//-----------------------------------------------------------------------
 
