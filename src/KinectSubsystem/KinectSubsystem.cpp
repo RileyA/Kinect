@@ -33,7 +33,7 @@ namespace Oryx
 	}
 	//-----------------------------------------------------------------------
 
-    KinectSubsystem::~KinectSubsystem()
+	KinectSubsystem::~KinectSubsystem()
     {
     }
     //-----------------------------------------------------------------------
@@ -154,11 +154,11 @@ namespace Oryx
 		for(int i=0; i<640*480; i++) 
 		{
 			// scale into 0-255
-			byte dep = static_cast<byte>(depth[i]/2047.f * 255.f);
+			//byte dep = static_cast<byte>(depth[i]/2047.f * 255.f);
 
 			// distance approximation in meters
-			//float distance = 0.1236 * tan(depth[i] / 2842.5 + 1.1863);
-			//byte dep = (std::min(distance, 5.f) / 5.f) * 255;
+			float distance = 0.1236 * tan(depth[i] / 2842.5 + 1.1863);
+			byte dep = (std::min(distance, 5.f) / 5.f) * 255;
 
 			// smear over all the channels...
 			depthbuf[3*i+0] = dep;
