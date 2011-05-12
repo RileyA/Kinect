@@ -4,14 +4,12 @@
 #include "Oryx.h"
 #include "Kinectdllmain.h"
 #include "OryxEngineSubsystem.h"
-
-typedef struct _freenect_device freenect_device;
-typedef struct _freenect_context freenect_context;
+#include "Kinect.h"
 
 namespace Oryx
 {
-	void depthCallback(freenect_device *dev, void *v_depth, uint32_t timestamp);
-	void colorCallback(freenect_device *dev, void *rgb, uint32_t timestamp);
+	//void depthCallback(freenect_device *dev, void *v_depth, uint32_t timestamp);
+	//void colorCallback(freenect_device *dev, void *rgb, uint32_t timestamp);
 
 	class ORYX_KINECT_EXPORT KinectSubsystem : public EngineSubsystem
 	{
@@ -20,32 +18,43 @@ namespace Oryx
 		KinectSubsystem();
 		~KinectSubsystem();
 
-		virtual void _init();
-		virtual void _deinit();
-		virtual void _update(Real delta);
-		virtual void _endState();
+		void _init();
+		void _deinit();
+		void _update(Real delta);
+		void _endState();
 
-		virtual String getName();
+		String getName();
 
-		void depthCallback(freenect_device* device, void *data, uint32_t time);
+		/** Returns the number of Kinects libfreenect sees */
+		unsigned int getNumDevices();
+
+		/** Sets up a Kinect by index and returns a pointer (or NULL if not successful) */
+		Kinect* initDevice(unsigned int deviceIndex);
+
+		/** Shuts down a Kinect */
+		void deinitDevice(Kinect* device);
+
+		/** Gets an initialized device by index */
+		Kinect* getDevice(unsigned int index);
+
+		/** Gets a Kinect object pointer based on the libfreenect pointer
+		 *		@remarks This is primarily for the depth/color callbacks. */
+		Kinect* getDevice(freenect_device* handle);
+
+		/*void depthCallback(freenect_device* device, void *data, uint32_t time);
 		void colorCallback(freenect_device* device, void *data, uint32_t time);
 
 		byte* getRawDepth();
-		byte* getRawColor();
+		byte* getRawColor();*/
 	
 	protected:
 
 		bool mInitialized;
 		freenect_context* mContext;
 
-		// stuff for the device (should be split into its own class at some point
-		freenect_device* mDevice;
-
-		// vidya buffers
-		byte mDepthBuffer[640][480][3];
-		byte mColorBuffer[640][480][3];
-
-		uint16_t mGamma[2048];
+		// The devices, a map is used here so that the device indices from libfreenect
+		// align with the indices used to store these
+		std::map<unsigned int, Kinect*> mDevices;
 
 	};
 }

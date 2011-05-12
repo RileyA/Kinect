@@ -9,6 +9,7 @@ public:
 		mKinect = mEngine->getSubsystem("KinectSubsystem")->castType<KinectSubsystem>();
 		mSDL = mEngine->getSubsystem("SDLSubsystem")->castType<SDLSubsystem>();
 		mSDL->setManual(true);
+		mDevice = mKinect->initDevice(0);
 	}
 
 	~TestState()
@@ -29,8 +30,8 @@ public:
 	virtual void update(Real delta)
 	{
 		// draw kinect data to the SDL surface
-		mSDL->drawRaw(mKinect->getRawDepth());
-		mSDL->drawRaw(mKinect->getRawColor(),640,0);
+		//mSDL->drawRaw(mKinect->getRawDepth());
+		mSDL->drawRaw(mDevice->getRawColor());
 
 		// exit after 30secs, since I don't have any input set up...
 		if(TimeManager::getPtr()->getTimeDecimal() > 30.f)
@@ -41,6 +42,7 @@ private:
 
 	KinectSubsystem* mKinect;
 	SDLSubsystem* mSDL;
+	Kinect* mDevice;
 
 };
 

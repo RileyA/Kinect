@@ -7,30 +7,8 @@
 
 namespace Oryx
 {
-	void depthCallback(freenect_device *dev, void *v_depth, uint32_t timestamp)
-	{
-		Engine::getPtr()->getSubsystem("KinectSubsystem")->
-			castType<KinectSubsystem>()->depthCallback(dev, v_depth, timestamp);
-	}
-
-	void colorCallback(freenect_device *dev, void *rgb, uint32_t timestamp)
-	{
-		Engine::getPtr()->getSubsystem("KinectSubsystem")->
-			castType<KinectSubsystem>()->colorCallback(dev, rgb, timestamp);
-	}
-
 	KinectSubsystem::KinectSubsystem()
-		:mContext(0) 
-	{
-		// magical copy pasta from libfreenect's gltest
-		// used for turning the raw depth data into nice colorful output
-		//for (int i=0; i<2048; i++) 
-		//{
-		//	float v = i/2048.0;
-		//	v = powf(v, 3)* 6;
-		//	mGamma[i] = v*6*256;
-		//}
-	}
+		:mContext(0) {}
 	//-----------------------------------------------------------------------
 
 	KinectSubsystem::~KinectSubsystem()
@@ -42,64 +20,29 @@ namespace Oryx
 	{
 		if(!mInitialized)
 		{
-			mInitialized = true;
 			Logger::getPtr()->logMessage("Kinect Subsystem Starting...");
 
 			if(freenect_init(&mContext, 0) >= 0)
 			{
-				// more verbose log-age
+				mInitialized = true;
+
+				Kinect::preprocessDepth();
+
+				// verbose-ish log-age
 				freenect_set_log_level(mContext, FREENECT_LOG_DEBUG);
 
 				// look for devices
-				int nrDevices = freenect_num_devices(mContext);
-				Logger::getPtr()->logMessage("Found "+StringUtils::toString(nrDevices)+" devices.");
-
-				// TODO: do device stuff in a separate class
-
-				// If there aren't any devices, or the first device fails to open, then abort
-				if(nrDevices < 0 || freenect_open_device(mContext, &mDevice, 0) < 0)
-				{
-					mInitialized = false;
-					Logger::getPtr()->logMessage("Kinect init failed!");
-				}
-				else
-				{
-					// clear these out to begin with
-					memset(mDepthBuffer, (byte)0, sizeof(mDepthBuffer));
-					memset(mColorBuffer, (byte)0, sizeof(mColorBuffer));
-
-					// set the tilt (dunno how exactly this will work on the real thing...)
-					freenect_set_tilt_degs(mDevice, 0);
-
-					// ooooh, it has an LED!
-					// freenect_set_led(mDevice,LED_RED);
-
-					// register callbacks
-					freenect_set_depth_callback(mDevice, Oryx::depthCallback);
-					freenect_set_video_callback(mDevice, Oryx::colorCallback);
-					
-					// setup depth/color modes
-					freenect_set_video_mode(mDevice, freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, 
-						FREENECT_VIDEO_RGB));
-					freenect_set_depth_mode(mDevice, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, 
-						FREENECT_DEPTH_11BIT));
-
-					// set the buffer to use for video
-					freenect_set_video_buffer(mDevice, mColorBuffer);
-
-					// start 'em up
-					freenect_start_depth(mDevice);
-					freenect_start_video(mDevice);
-				}
+				Logger::getPtr()->logMessage("Found "+StringUtils::toString(getNumDevices()) + 
+					" devices.");
+				
+				Logger::getPtr()->logMessage("Kinect init succeeded!");
 			}
 			else
 			{
 				mInitialized = false;
+				mContext = 0;
 				Logger::getPtr()->logMessage("Kinect init failed!");
 			}
-
-			if(mInitialized)
-				Logger::getPtr()->logMessage("Kinect Subsystem Initialized.");
 		}
 	}
 	//-----------------------------------------------------------------------
@@ -110,12 +53,16 @@ namespace Oryx
 		{
 			Logger::getPtr()->logMessage("Shutting down Kinect Subsystem...");
 
-			// random cleanup
-			freenect_stop_video(mDevice);
-			freenect_stop_depth(mDevice);
-			freenect_close_device(mDevice);
-			freenect_shutdown(mContext);
+			for(int i = 0; i < mDevices.size(); ++i)
+				delete mDevices[i];
+			mDevices.clear();
 
+			if(mContext)
+			{
+				freenect_shutdown(mContext);
+				mContext = 0;
+			}
+			
 			mInitialized = false;
 			Logger::getPtr()->logMessage("Kinect Subsystem Deinitialized.");
 		}
@@ -124,11 +71,9 @@ namespace Oryx
 
 	void KinectSubsystem::_update(Real delta)
 	{
-		if(!mInitialized || freenect_process_events(mContext) < 0)
-		{
-			// just exit if it stops processing events, or failed to init properly
-			Engine::getPtr()->endCurrentState();
-		}
+		// no need to update if there aren't any devices active
+		if(!mDevices.empty())
+			freenect_process_events(mContext);
 	}
 	//-----------------------------------------------------------------------
 
@@ -144,7 +89,76 @@ namespace Oryx
 	}
 	//-----------------------------------------------------------------------
 
-	void KinectSubsystem::depthCallback(freenect_device* device, void *data, uint32_t time)
+	unsigned int KinectSubsystem::getNumDevices()
+	{
+		return freenect_num_devices(mContext);
+	}
+
+	Kinect* KinectSubsystem::initDevice(unsigned int deviceIndex)
+	{
+		if(getNumDevices() <= deviceIndex)
+		{
+			Logger::getPtr()->logMessage("Invalid index. No such device.");
+			return 0;
+		}
+
+		if(getDevice(deviceIndex))
+		{
+			Logger::getPtr()->logMessage("Device at index " + StringUtils::toString(deviceIndex) +
+				" is already in use.");
+			return 0;
+		}
+
+		freenect_device* dev = 0;
+
+		if(freenect_open_device(mContext, &dev, deviceIndex) >= 0 && dev)
+		{
+			mDevices[deviceIndex] = new Kinect(dev, mContext);
+			return mDevices[deviceIndex];
+		}
+		else
+		{
+			Logger::getPtr()->logMessage("Could not initialize Kinect at index " + 
+				StringUtils::toString(deviceIndex));
+		}
+
+		return 0;
+	}
+	//-----------------------------------------------------------------------
+	
+	void KinectSubsystem::deinitDevice(Kinect* device)
+	{
+		std::map<unsigned int,Kinect*>::iterator it = mDevices.begin();
+		for(it; it != mDevices.end(); ++it)
+		{
+			if(device == it->second)
+			{
+				delete it->second;
+				mDevices.erase(it);
+			}
+		}
+	}
+	//-----------------------------------------------------------------------
+
+	Kinect* KinectSubsystem::getDevice(unsigned int index)
+	{
+		return mDevices.find(index) != mDevices.end() ? mDevices[index] : 0;
+	}
+	//-----------------------------------------------------------------------
+	
+	Kinect* KinectSubsystem::getDevice(freenect_device* handle)
+	{
+		std::map<unsigned int,Kinect*>::iterator it = mDevices.begin();
+		for(it; it != mDevices.end(); ++it)
+		{
+			if(handle == it->second->getHandle())
+				return it->second;
+		}	
+		return 0;
+	}
+	//-----------------------------------------------------------------------
+
+	/*void KinectSubsystem::depthCallback(freenect_device* device, void *data, uint32_t time)
 	{
 		// depth comes as an 11 bit value (I think?)
 		uint16_t *depth = (uint16_t*)data;
@@ -167,7 +181,7 @@ namespace Oryx
 
 			// the following was nabbed from the gltest example from freenect, and
 			// formats the 11-bit depth data in a nice colorful format
-			/*int pval = mGamma[depth[i]];
+			int pval = mGamma[depth[i]];
 			int lb = pval & 0xff;
 			
 			switch (pval>>8) 
@@ -207,7 +221,7 @@ namespace Oryx
 					depthbuf[3*i+1] = 0;
 					depthbuf[3*i+2] = 0;
 					break;
-			}*/
+			}
 		}
 	}
 	//-----------------------------------------------------------------------
@@ -229,4 +243,5 @@ namespace Oryx
 		return &mColorBuffer[0][0][0];
 	}
 	//-----------------------------------------------------------------------
+	*/
 }
