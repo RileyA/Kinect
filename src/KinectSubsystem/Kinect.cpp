@@ -11,10 +11,14 @@ namespace Oryx
 	Real Kinect::mDepths[2048] = {};
 
 	Kinect::Kinect(freenect_device* device, freenect_context* context)
-		:mDevice(device),mContext(context),mCurrentLED(LC_OFF)
+		:mDevice(device)
+		,mContext(context)
+		,mCurrentLED(LC_OFF)
+		,mVideoEnabled(false)
+		,mDepthRGBBuffer(0)
 	{
 		// zero out the tilt
-		freenect_set_tilt_degs(mDevice, 0);
+		setTiltAngle(0);
 
 		// set callbacks
 		freenect_set_depth_callback(mDevice, Oryx::depthCallback);
@@ -29,21 +33,77 @@ namespace Oryx
 		// set the buffers
 		freenect_set_video_buffer(mDevice, mColorBuffer);
 		freenect_set_depth_buffer(mDevice, mDepthBuffer);
-
-		// and start it up TODO: split out startup and such into different functions
-		freenect_start_depth(mDevice);
-		freenect_start_video(mDevice);
 	}
 	//-----------------------------------------------------------------------
 
 	Kinect::~Kinect()
 	{
-		freenect_stop_video(mDevice);
-		freenect_stop_depth(mDevice);
+		setVideoEnabled(false);
+		disableRGBDepth();
 		freenect_close_device(mDevice);
 	}
 	//-----------------------------------------------------------------------
 	
+	void Kinect::setVideoEnabled(bool enabled)
+	{
+		if(enabled && !mVideoEnabled)
+		{
+			freenect_start_depth(mDevice);
+			freenect_start_video(mDevice);
+		}
+		else if(!enabled && mVideoEnabled)
+		{
+			freenect_stop_video(mDevice);
+			freenect_stop_depth(mDevice);
+		}
+	}
+	//-----------------------------------------------------------------------
+
+	void Kinect::setTiltAngle(Real degrees)
+	{
+		freenect_set_tilt_degs(mDevice, degrees);
+	}
+	//-----------------------------------------------------------------------
+	
+	Real Kinect::getTiltAngle()
+	{
+		return freenect_get_tilt_degs(freenect_get_tilt_state(mDevice));
+	}
+	//-----------------------------------------------------------------------
+	
+	void Kinect::setLED(LEDColor color)
+	{
+		mCurrentLED = color;
+		freenect_set_led(mDevice, static_cast<freenect_led_options>(color));
+	}
+	//-----------------------------------------------------------------------
+
+	Kinect::LEDColor Kinect::getLED()
+	{
+		return mCurrentLED;
+	}
+	//-----------------------------------------------------------------------
+
+	void Kinect::enableRGBDepth()
+	{
+		if(!mDepthRGBBuffer)
+			mDepthRGBBuffer = new byte[648*480*3];
+	}
+	//-----------------------------------------------------------------------
+
+	void Kinect::disableRGBDepth()
+	{
+		if(mDepthRGBBuffer)
+			delete[] mDepthRGBBuffer;
+	}
+	//-----------------------------------------------------------------------
+
+	byte* Kinect::getRGBDepth()
+	{
+		return mDepthRGBBuffer;
+	}
+	//-----------------------------------------------------------------------
+
 	k_depth* Kinect::getRawDepth()
 	{
 		return &mDepthBuffer[0];
@@ -67,7 +127,20 @@ namespace Oryx
 	
 	void Kinect::depthCallback(freenect_device* device, void *data, uint32_t time)
 	{
+		if(mDepthRGBBuffer)
+		{
+			k_depth* depth = static_cast<k_depth*>(data);
+			
+			for(int i = 0; i< 640*480; ++i)
+			{
+				// simply constrain to 0-255 for now...
+				byte intensity = static_cast<byte>((depth[i]/2047.f)*255.f);
 
+				mDepthRGBBuffer[i*3+0] = intensity;
+				mDepthRGBBuffer[i*3+1] = intensity;
+				mDepthRGBBuffer[i*3+2] = intensity;
+			}
+		}
 	}
 	//-----------------------------------------------------------------------
 

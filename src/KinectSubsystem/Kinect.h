@@ -37,12 +37,32 @@ namespace Oryx
 		/** Destructor */
 		virtual ~Kinect();
 
+		void setVideoEnabled(bool enabled);
+
 		/** Sets the Kinect's LED color 
 				@param color The desired color */
 		void setLED(LEDColor color);
 
 		/** Gets the current LED color */
 		LEDColor getLED();
+
+		/** Sets the Kinect's tilting value in degrees */
+		void setTiltAngle(Real degrees);
+
+		/** Gets the Kinect's tilting value in degrees */
+		Real getTiltAngle();
+
+		/** Enables an rgb color buffer based on the raw depth data
+		 *		@remarks Require a good deal of extra memory and processing, 
+		 *			so use with care.*/
+		void enableRGBDepth();
+
+		/** Disables the color depth output */
+		void disableRGBDepth();
+
+		/** Gets the color depth output (or NULL if it is disabled)
+		 *		@return Ptr to first element of a 640*480*3 array of 8-bit color vals */
+		byte* getRGBDepth();
 
 		/** Gets a pointer to the raw depth stream
 		 *		@return Pointer to the first element of a 640*480 array of 
@@ -58,7 +78,7 @@ namespace Oryx
 		freenect_device* getHandle(){return mDevice;}
 
 		/** Helper that approximates depth in meters based on raw Kinect output */
-		inline Real getApproxDepth(k_depth d)
+		static inline Real getApproxDepth(k_depth d)
 		{
 			return mDepths[d];
 		}
@@ -78,6 +98,9 @@ namespace Oryx
 
 		/** Calculates raw kinect->approx depth conversions. */
 		static void preprocessDepth();
+
+		/** Whether or not the color and depth streams are active */
+		bool mVideoEnabled;
 		
 		/** The device itself */
 		freenect_device* mDevice;
@@ -95,6 +118,10 @@ namespace Oryx
 		/** 11-bit raw output, not suitable for use as a texture
 		 *		N.B. This is not in any specific unit, this is magical raw output... */
 		k_depth mDepthBuffer[640*480];
+
+		/** An extra bufer foir storing a color representation of the depth,
+		 *		for use in visualizations and debugging */
+		byte* mDepthRGBBuffer;
 
 		// Precalculated distances
 		static Real mDepths[2048];

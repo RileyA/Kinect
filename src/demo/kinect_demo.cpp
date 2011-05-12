@@ -10,6 +10,8 @@ public:
 		mSDL = mEngine->getSubsystem("SDLSubsystem")->castType<SDLSubsystem>();
 		mSDL->setManual(true);
 		mDevice = mKinect->initDevice(0);
+		mDevice->setVideoEnabled(true);
+		mDevice->enableRGBDepth();
 	}
 
 	~TestState()
@@ -30,8 +32,8 @@ public:
 	virtual void update(Real delta)
 	{
 		// draw kinect data to the SDL surface
-		//mSDL->drawRaw(mKinect->getRawDepth());
 		mSDL->drawRaw(mDevice->getRawColor());
+		mSDL->drawRaw(mDevice->getRGBDepth(), 640, 0);
 
 		// exit after 30secs, since I don't have any input set up...
 		if(TimeManager::getPtr()->getTimeDecimal() > 30.f)
