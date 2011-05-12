@@ -1,1 +1,8 @@
-Prelim Kinect testing.
+Kinect Experimentation.
+
+This is implemented as an Oryx Engine EngineSubsystem, and basically
+just wraps the libfreenect C API in a nice object-oriented manner.
+
+Included demo dumps the color/depth output side-by-side onto an SDL surface .
+
+Licensed under GPL v3. See gpl-3.0.txt.
