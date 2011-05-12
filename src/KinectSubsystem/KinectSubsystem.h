@@ -41,12 +41,6 @@ namespace Oryx
 		 *		@remarks This is primarily for the depth/color callbacks. */
 		Kinect* getDevice(freenect_device* handle);
 
-		/*void depthCallback(freenect_device* device, void *data, uint32_t time);
-		void colorCallback(freenect_device* device, void *data, uint32_t time);
-
-		byte* getRawDepth();
-		byte* getRawColor();*/
-	
 	protected:
 
 		bool mInitialized;
