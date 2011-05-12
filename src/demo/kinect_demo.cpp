@@ -5,13 +5,11 @@ class TestState : public GameState
 public:
 
 	TestState()
+		:mColorTimestamp(0)
+		,mDepthTimestamp(0)
 	{
 		mKinect = mEngine->getSubsystem("KinectSubsystem")->castType<KinectSubsystem>();
 		mSDL = mEngine->getSubsystem("SDLSubsystem")->castType<SDLSubsystem>();
-		mSDL->setManual(true);
-		mDevice = mKinect->initDevice(0);
-		mDevice->setVideoEnabled(true);
-		mDevice->enableRGBDepth();
 	}
 
 	~TestState()
@@ -21,19 +19,42 @@ public:
 
 	virtual void init()
 	{
-		// ...
+		mSDL->setManual(true);
+		
+		// init the device at index 0
+		mDevice = mKinect->initDevice(0);
+
+		// enable depth and color streams
+		mDevice->setVideoEnabled(true);
+
+		// enable the special depth rgb stream
+		mDevice->setRGBDepthEnabled(true);
 	}
 
 	virtual void deinit()
 	{
-		// ...
+		mKinect->deinitDevice(mDevice);
 	}
 
 	virtual void update(Real delta)
 	{
-		// draw kinect data to the SDL surface
-		mSDL->drawRaw(mDevice->getRawColor());
-		mSDL->drawRaw(mDevice->getRGBDepth(), 640, 0);
+		bool surfaceDirty = false;
+
+		if(mColorTimestamp != mDevice->getColorTimestamp())
+		{
+			mColorTimestamp = mDevice->getColorTimestamp();
+			mSDL->drawRaw(mDevice->getRawColor());
+			surfaceDirty = true;
+		}
+		if(mDepthTimestamp != mDevice->getDepthTimestamp())
+		{
+			mDepthTimestamp = mDevice->getDepthTimestamp();
+			mSDL->drawRaw(mDevice->getRGBDepth(), 640, 0);
+			surfaceDirty = true;
+		}
+
+		if(surfaceDirty)
+			mSDL->flip();// flip the buffers
 
 		// exit after 30secs, since I don't have any input set up...
 		if(TimeManager::getPtr()->getTimeDecimal() > 30.f)
@@ -45,6 +66,9 @@ private:
 	KinectSubsystem* mKinect;
 	SDLSubsystem* mSDL;
 	Kinect* mDevice;
+
+	uint32_t mColorTimestamp;
+	uint32_t mDepthTimestamp;
 
 };
 

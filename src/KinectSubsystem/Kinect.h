@@ -37,6 +37,7 @@ namespace Oryx
 		/** Destructor */
 		virtual ~Kinect();
 
+		/** Shortcut to enable both depth and color streams */
 		void setVideoEnabled(bool enabled);
 
 		/** Sets the Kinect's LED color 
@@ -55,10 +56,15 @@ namespace Oryx
 		/** Enables an rgb color buffer based on the raw depth data
 		 *		@remarks Require a good deal of extra memory and processing, 
 		 *			so use with care.*/
-		void enableRGBDepth();
+		void setRGBDepthEnabled(bool enabled);
 
-		/** Disables the color depth output */
-		void disableRGBDepth();
+		/** Sets whether or not depth output is enabled, and available via
+		 *		getRawDepth() */
+		void setDepthOutputEnabled(bool enabled);
+
+		/** Sets whether or not color output is enabled and available via
+		 *		getRawColor */
+		void setColorOutputEnabled(bool enabled);
 
 		/** Gets the color depth output (or NULL if it is disabled)
 		 *		@return Ptr to first element of a 640*480*3 array of 8-bit color vals */
@@ -74,6 +80,12 @@ namespace Oryx
 		 *			color values (plain 'ol 24-bit RGB) */
 		byte* getRawColor();
 
+		/** Gets a timestamp for the last color stream update, to avoid redundant updates */
+		uint32_t getColorTimestamp();
+
+		/** Gets a timestamp for the last depth stream update, to avoid redundant updates */
+		uint32_t getDepthTimestamp();
+
 		/** Gets the libfreenect handle for the device */
 		freenect_device* getHandle(){return mDevice;}
 
@@ -86,8 +98,8 @@ namespace Oryx
 		// Allow the subsystem access to this thing's innards
 		friend class KinectSubsystem;
 
-		void depthCallback(freenect_device* device, void *data, uint32_t time);
-		void colorCallback(freenect_device* device, void *data, uint32_t time);
+		void depthCallback(freenect_device* device, void *data, uint32_t timestamp);
+		void colorCallback(freenect_device* device, void *data, uint32_t timestamp);
 
 	protected:
 
@@ -113,11 +125,11 @@ namespace Oryx
 		LEDColor mCurrentLED;
 
 		// The 24-bit color video feed
-		byte mColorBuffer[640*480*3];
+		byte* mColorBuffer;
 
 		/** 11-bit raw output, not suitable for use as a texture
 		 *		N.B. This is not in any specific unit, this is magical raw output... */
-		k_depth mDepthBuffer[640*480];
+		k_depth* mDepthBuffer;
 
 		/** An extra bufer foir storing a color representation of the depth,
 		 *		for use in visualizations and debugging */
@@ -125,6 +137,9 @@ namespace Oryx
 
 		// Precalculated distances
 		static Real mDepths[2048];
+
+		// timestamps
+		uint32_t mColorTime, mDepthTime;
 	};
 
 	void depthCallback(freenect_device *dev, void *v_depth, uint32_t timestamp);
