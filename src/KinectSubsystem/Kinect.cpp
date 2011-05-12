@@ -94,7 +94,10 @@ namespace Oryx
 	void Kinect::disableRGBDepth()
 	{
 		if(mDepthRGBBuffer)
+		{
 			delete[] mDepthRGBBuffer;
+			mDepthRGBBuffer = 0;
+		}
 	}
 	//-----------------------------------------------------------------------
 
