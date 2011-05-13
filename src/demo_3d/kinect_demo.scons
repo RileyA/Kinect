@@ -1,0 +1,11 @@
+import os
+source = ['kinect_demo_3d.cpp','PlayState.cpp','FPSCamera.cpp']
+libs = ['OryxEngine','KinectSubsystem','OISSubsystem','OgreSubsystem']
+if os.name == 'nt':
+	env = Environment(ENV=os.environ,tools=['mingw','g++'],CXX=['g++'],CPPDEFINES=['WIN32'])
+	env['ENV']['LD_RUN_PATH']='.'
+	env.Program('demo_3d',source,CPPPATH=['../src','../../OryxEngine/src'],LIBS=libs)
+else:
+	env = Environment();
+	env['ENV']['LD_RUN_PATH']='.'
+	env.Program('demo_3d',source,CPPPATH=['../src','../../OryxEngine/src'],LIBS=libs)
