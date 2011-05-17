@@ -23,6 +23,12 @@ namespace Oryx
 		void _update(Real delta);
 		void _endState();
 
+		/** Starts update thread */
+		void go();
+
+		/** Stops the threaded update loop */
+		void stop();
+
 		String getName();
 
 		/** Returns the number of Kinects libfreenect sees */
@@ -43,7 +49,12 @@ namespace Oryx
 
 	protected:
 
+		void loop();
+
 		bool mInitialized;
+
+		bool mDone;
+
 		freenect_context* mContext;
 
 		// The devices, a map is used here so that the device indices from libfreenect

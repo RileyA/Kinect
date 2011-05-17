@@ -178,7 +178,7 @@ namespace Oryx
 			for(int i = 0; i< 640*480; ++i)
 			{
 				// simply constrain to 0-255 for now...
-				byte intensity = static_cast<byte>((depth[i]/2047.f)*255.f);
+				byte intensity = static_cast<byte>((mDepths[depth[i]]/5.f)*255.f);
 
 				mDepthRGBBuffer[i*3+0] = intensity;
 				mDepthRGBBuffer[i*3+1] = intensity;

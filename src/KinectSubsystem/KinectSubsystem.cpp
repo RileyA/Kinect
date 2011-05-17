@@ -4,11 +4,13 @@
 #include "OryxEngine.h"
 #include "OryxTimeManager.h"
 #include "libfreenect.h"
+#include <boost/thread/thread.hpp>
+#include <boost/bind.hpp>
 
 namespace Oryx
 {
 	KinectSubsystem::KinectSubsystem()
-		:mContext(0) {}
+		:mContext(0),mDone(0) {}
 	//-----------------------------------------------------------------------
 
 	KinectSubsystem::~KinectSubsystem()
@@ -51,6 +53,7 @@ namespace Oryx
 	{
 		if(mInitialized)
 		{
+			stop();
 			Logger::getPtr()->logMessage("Shutting down Kinect Subsystem...");
 
 			for(int i = 0; i < mDevices.size(); ++i)
@@ -72,14 +75,26 @@ namespace Oryx
 	void KinectSubsystem::_update(Real delta)
 	{
 		// no need to update if there aren't any devices active
-		if(!mDevices.empty())
-			freenect_process_events(mContext);
+		//if(!mDevices.empty())
+		//	freenect_process_events(mContext);
 	}
 	//-----------------------------------------------------------------------
 
 	void KinectSubsystem::_endState()
 	{
 
+	}
+	//-----------------------------------------------------------------------
+
+	void KinectSubsystem::go()
+	{
+		boost::thread thrd(boost::bind(&KinectSubsystem::loop,this));
+	}
+	//-----------------------------------------------------------------------
+	
+	void KinectSubsystem::stop()
+	{
+		mDone = true;
 	}
 	//-----------------------------------------------------------------------
 
@@ -155,6 +170,15 @@ namespace Oryx
 				return it->second;
 		}	
 		return 0;
+	}
+	//-----------------------------------------------------------------------
+	
+	void KinectSubsystem::loop()
+	{
+		while(freenect_process_events(mContext) >= 0 && !mDone)
+		{
+			
+		}
 	}
 	//-----------------------------------------------------------------------
 }

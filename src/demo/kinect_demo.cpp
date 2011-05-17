@@ -1,5 +1,7 @@
 #include "kinect_demo.h"
 
+#include <unistd.h>
+
 class TestState : public GameState
 {
 public:
@@ -29,6 +31,8 @@ public:
 
 		// enable the special depth rgb stream
 		mDevice->setRGBDepthEnabled(true);
+
+		mKinect->go();
 	}
 
 	virtual void deinit()
@@ -39,6 +43,7 @@ public:
 	virtual void update(Real delta)
 	{
 		bool surfaceDirty = false;
+		//sleep(1);
 
 		if(mColorTimestamp != mDevice->getColorTimestamp())
 		{
@@ -51,6 +56,7 @@ public:
 			mDepthTimestamp = mDevice->getDepthTimestamp();
 			mSDL->drawRaw(mDevice->getRGBDepth(), 640, 0);
 			surfaceDirty = true;
+			//mDevice->setLED(Kinect::LEDColor(Rand::get().gen(0,4)));
 		}
 
 		if(surfaceDirty)
@@ -58,7 +64,10 @@ public:
 
 		// exit after 30secs, since I don't have any input set up...
 		if(TimeManager::getPtr()->getTimeDecimal() > 30.f)
+		{
 			mEngine->endCurrentState();
+			mKinect->stop();
+		}
 	}
 
 private:

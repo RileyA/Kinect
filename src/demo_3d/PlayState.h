@@ -20,7 +20,7 @@ namespace Oryx
 		void deinit();
 		void update(Real delta);
 
-		void createPointCloud();
+		void createPointCloud(bool cap = true);
 
 	private:
 
@@ -32,6 +32,12 @@ namespace Oryx
 
 		Mesh* mMesh;
 		FPSCamera* mCamera;
+
+		byte storedColor[640*480*3];
+		k_depth storedDepth[640*480];
+
+		Real mTimer;
+		Real mAngle;
 	};
 }
 

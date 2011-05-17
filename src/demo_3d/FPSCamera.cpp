@@ -53,13 +53,13 @@ namespace Oryx
 		mPitchNode->addChild(mRollNode);
 		mRollNode->addChild(mCamera);
 
-		mCamera->setFOV(70.f);
+		mCamera->setFOV(58.f);
 	}
 
 	void FPSCamera::update(Real delta)
 	{
-		Vector3 motion = mCamera->getAbsoluteDirection()*20*delta*(mOIS->isKeyDown("KC_W")-mOIS->isKeyDown("KC_S"))
-			+mCamera->getAbsoluteRight()*20*delta*(mOIS->isKeyDown("KC_D")-mOIS->isKeyDown("KC_A"));
+		Vector3 motion = mCamera->getAbsoluteDirection()*2*delta*(mOIS->isKeyDown("KC_W")-mOIS->isKeyDown("KC_S"))
+			+mCamera->getAbsoluteRight()*2*delta*(mOIS->isKeyDown("KC_D")-mOIS->isKeyDown("KC_A"));
 
 		if(motion != Vector3::ZERO)
 		{
