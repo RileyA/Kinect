@@ -38,6 +38,8 @@ namespace Oryx
 
 		Real mTimer;
 		Real mAngle;
+
+		Real mTime2;
 	};
 }
 

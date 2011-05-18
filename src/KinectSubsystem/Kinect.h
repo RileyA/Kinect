@@ -2,8 +2,15 @@
 #define KINECT_H
 
 #include "Oryx.h"
+#include "Oryx3DMath.h"
+#include "OryxMatrix3.h"
 #include "Kinectdllmain.h"
 #include "OryxEngineSubsystem.h"
+
+#define KINECT_FOV_H 58.f
+#define KINECT_FOV_H_RAD 1.01229f
+#define KINECT_FOV_V 45.f
+#define KINECT_FOV_V_RAD 0.78539f
 
 // pre-declare these here, w/o actually including anything, so client
 // aps don't need to include any libfreenect junk
@@ -93,6 +100,29 @@ namespace Oryx
 		static inline Real getApproxDepth(k_depth d)
 		{
 			return mDepths[d];
+		}
+
+		static inline Vector3 getApproxPos(Real x, Real y, k_depth raw_d)
+		{
+			// depth in meters
+			Real d = Kinect::getApproxDepth(raw_d);
+
+			// the view space position
+			Vector3 vsPos = Vector3(x,y,d);
+
+			// inverse view projection (transforms view -> world space)
+			Matrix3 invVProj = Matrix3(tan(KINECT_FOV_H_RAD/2)*d,0,0,
+					0,-tan(KINECT_FOV_V_RAD/2)*d,0,
+					0,0,-1);
+
+			// multiply into world space and return
+			return vsPos * invVProj;
+		}
+
+		static inline Vector3 getApproxPos(int index, k_depth raw_d)
+		{
+			return getApproxPos((index % 640 - 320) / 320.f,
+				(index / 640 - 240) / 240.f, raw_d);
 		}
 
 		// Allow the subsystem access to this thing's innards

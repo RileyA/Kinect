@@ -1,17 +1,6 @@
 #include "PlayState.h"
 #include "Oryx3DMath.h"
-
-#define PI 3.14159f
-
-// FOV, based on Kinect specs
-#define KINECT_FOV_H 58.f
-#define KINECT_FOV_H_RAD 58.f * PI/180.f
-#define KINECT_FOV_V 45.f
-#define KINECT_FOV_V_RAD 45.f * PI/180.f
-
-// Complete guesses...
-#define KINECT_NEAR 0.1
-#define KINECT_FAR 0.7
+#include "OryxMatrix4.h"
 
 namespace Oryx
 {
@@ -19,6 +8,7 @@ namespace Oryx
 	{
 		mTimer = 0.f;
 		mAngle = 0.f;
+		mTime2 = 0.f;
 	}
 
 	PlayState::~PlayState()
@@ -54,10 +44,17 @@ namespace Oryx
 	void PlayState::update(Real delta)
 	{
 		mTimer+=delta;
-		if(mTimer > 0.1f)
+		if(mTimer > 1.f/30.f)
 		{
 			mTimer = 0.f;
 			createPointCloud();
+			//k_depth dep = mDevice->getRawDepth()[640*240+320];
+			//k_depth dep2 = mDevice->getRawDepth()[640*240+50];
+			//k_depth dep3 = mDevice->getRawDepth()[640*240+590];
+			//std::cout<<"Depth: "<<dep2<<" "<<Kinect::getApproxDepth(dep2)*39.3700787<<"\n";
+			//std::cout<<"Depth: "<<dep<<" "<<Kinect::getApproxDepth(dep)*39.3700787<<"\n";
+			//std::cout<<"Depth: "<<dep3<<" "<<Kinect::getApproxDepth(dep3)*39.3700787<<"\n";
+			//std::cout<<"\n";
 		}
 
 		if(mOIS->wasKeyPressed("KC_1"))
@@ -89,6 +86,13 @@ namespace Oryx
 		}
 	}
 
+	void addVert(MeshData& d, Vector3 pos)
+	{
+		d.vertices.push_back(pos.x);
+		d.vertices.push_back(pos.y);
+		d.vertices.push_back(pos.z);
+	}
+
 	void PlayState::createPointCloud(bool cap)
 	{
 		// process depth data and create mesh....
@@ -109,48 +113,55 @@ namespace Oryx
 		}
 
 		MeshData d = MeshData();
+		//d.addTexcoordSet();
 	
 		for(int i=0;i<640*480;++i)
 		{
-			// if it's 2047, it means the device couldn't get a distance (shadow, IR interference, etc)
-			Real dep = data[i] == 2047 ? 15 : Kinect::getApproxDepth(data[i]);
-
 			if(data[i] > 2046)
 				continue;
 
-			// construct a view projection matrix, based on Kinect specs
-			Matrix3 viewProjection = Matrix3::ZERO;
+			/*int left = data[i];
+			int right = data[i+1];
+			int d_left = data[i+640];
+			int d_right = data[i+641];
 
-			Real w = 1 / tan(KINECT_FOV_H_RAD * 0.5f);
-			Real h = 1 / tan(KINECT_FOV_V_RAD * 0.5f);
-			Real q = KINECT_NEAR / (KINECT_FAR - KINECT_NEAR);
+			if(left > 2046 || right > 2046 || d_left > 2046 || d_right > 2046)
+				continue;
 
-			viewProjection[0][0] = w;
-			viewProjection[1][1] = h;
-			viewProjection[2][2] = q;
-			viewProjection[3][2] = -q * KINECT_NEAR;
-			viewProjection[2][3] = 1;
+			Vector3 l_pos = getPos(i, left);
+			Vector3 r_pos = getPos(i+1, right);
+			Vector3 dl_pos = getPos(i+640, d_left);
+			Vector3 dr_pos = getPos(i+641, d_right);
 
-			// view projection matrix
-			Matrix3 invViewProj = viewProjection;//.Inverse();
+			if(l_pos.squaredDistance(r_pos) > 0.1f ||
+				dl_pos.squaredDistance(dr_pos) > 0.1f ||
+				dl_pos.squaredDistance(r_pos) > 0.1f ||
+				dr_pos.squaredDistance(l_pos) > 0.1f)
+				continue;
 
-			//Real de = 1/(-0.00307 * data[i] + 3.33);
-			Vector3 viewSpacePos = Vector3((i%640-320)/640.f,-(i/640-240)/480.f,Kinect::getApproxDepth(data[i]));
-			Vector3 worldSpacePos = /*invViewProj */ viewSpacePos;
+			// clockwise winding
+			// tri 1
+			addVert(d, l_pos);
+			addVert(d, r_pos);
+			addVert(d, dr_pos);
+			// tri 2
+			addVert(d, dr_pos);
+			addVert(d, dl_pos); 
+			addVert(d, l_pos);*/
 
-			d.vertices.push_back(worldSpacePos.x * 2);
-			d.vertices.push_back(worldSpacePos.y * 2);
-			d.vertices.push_back(worldSpacePos.z * -1);
+			addVert(d,Kinect::getApproxPos(i,data[i]));
 			
-			d.diffuse.push_back(color[i*3]/255.f);
-			d.diffuse.push_back(color[i*3+1]/255.f);
-			d.diffuse.push_back(color[i*3+2]/255.f);
-			d.diffuse.push_back(1.f);
+			for(int j = 0; j < 1; ++j)
+			{
+				d.diffuse.push_back(color[i*3]/255.f);
+				d.diffuse.push_back(color[i*3+1]/255.f);
+				d.diffuse.push_back(color[i*3+2]/255.f);
+				d.diffuse.push_back(1.f);
+			}
 		}
 
 		if(!mMesh)
 		{
-			d.indices.clear();
 			mMesh = mOgre->createMesh(d);
 			mOgre->getRootSceneNode()->addChild(mMesh);
 			mMesh->setMaterialName("cloud");
