@@ -43,7 +43,7 @@ namespace Oryx
 	void PlayState::update(Real delta)
 	{
 		mTimer+=delta;
-		if(mTimer > 1.f)
+		if(mTimer > 1.f/30.f)
 		{
 			mTimer = 0.f;
 			createPointCloud();
@@ -114,8 +114,14 @@ namespace Oryx
 			if(data[i] > 2046)
 				continue;
 
-			// actual polygonal mesh (sloooow)
-			/*int left = data[i];
+			addVert(d,Kinect::getApproxPos(i,data[i]));
+			d.diffuse.push_back(color[i*3]/255.f);
+			d.diffuse.push_back(color[i*3+1]/255.f);
+			d.diffuse.push_back(color[i*3+2]/255.f);
+			d.diffuse.push_back(1.f);
+
+			/* Alternate: make an actual polygonal mesh
+			int left = data[i];
 			int right = data[i+1];
 			int d_left = data[i+640];
 			int d_right = data[i+641];
@@ -142,43 +148,15 @@ namespace Oryx
 			// tri 2
 			addVert(d, dr_pos);
 			addVert(d, dl_pos); 
-			addVert(d, l_pos);*/
-
-			int x = i % 640;
-			int y = i / 640;
-
-			addVert(d,Kinect::getApproxPos(i,data[i]));
-			// get left, right
-			Vector3 pos1 = Kinect::getApproxPos(i-1,data[i-1]);// one to the left
-			Vector3 pos2 = Kinect::getApproxPos(i+640,data[i+640]);// one down
-			Vector3 normal = pos1.crossProduct(pos2);
-			normal.y = abs(normal.y);
-			std::cout<<normal.angleBetween(Vector3::UNIT_Y)<<"\n";
-
-			if(!((x >= 639 || x <= 0) && 
-				(!(y >= 479 || y <= 0))))
+			addVert(d, l_pos);
+			
+			for(int j = 0; j < 6; ++j)
 			{
-				// try and see if this is a part of the ground plane...
 				d.diffuse.push_back(color[i*3]/255.f);
 				d.diffuse.push_back(color[i*3+1]/255.f);
 				d.diffuse.push_back(color[i*3+2]/255.f);
 				d.diffuse.push_back(1.f);
-			}
-			else
-			{
-				d.diffuse.push_back(1.f);
-				d.diffuse.push_back(1.f);
-				d.diffuse.push_back(1.f);
-				d.diffuse.push_back(1.f);
-			}
-			
-			//for(int j = 0; j < 6; ++j)
-			//{
-				//d.diffuse.push_back(color[i*3]/255.f);
-				//d.diffuse.push_back(color[i*3+1]/255.f);
-				//d.diffuse.push_back(color[i*3+2]/255.f);
-				//d.diffuse.push_back(1.f);
-			//}
+			}*/
 		}
 
 		if(!mMesh)
