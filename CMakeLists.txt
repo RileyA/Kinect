@@ -21,14 +21,28 @@ set(FREENECT_LIB_DIR "/usr/lib" CACHE STRING "Where to look for freenect libs.")
 # Oryx
 set(ORYX_INCLUDE_DIR "/usr/include" CACHE STRING "Where to look for Oryx includes.")
 set(ORYX_LIB_DIR "/usr/lib" CACHE STRING "Where to look for Oryx libs.")
+set(ORYX_SUBSYSTEM_INCLUDE_DIR "/usr/include" CACHE STRING "Where to look for Oryx Subsystem includes.")
+set(ORYX_SUBSYSTEM_LIB_DIR "/usr/lib" CACHE STRING "Where to look for Oryx Subsystems.")
+
+# boost
+set(BOOST_INCLUDE_DIR "/usr/include" CACHE STRING "Where to look for boost includes.")
+set(BOOST_LIB_DIR "/usr/lib" CACHE STRING "Where to look for boost libs.")
 
 # common includes
 include_directories("${ORYX_INCLUDE_DIR}")
+include_directories("${ORYX_SUBSYSTEM_INCLUDE_DIR}")
 include_directories("src")
 
-# lib stuff
+# lib stuff, ugly, but gets the job done for now...
 set(ORYX_LIB ${ORYX_LIB_DIR}/${LIB_PREFIX}OryxEngine${LIB_POSTFIX})
+# subsystems
+set(OGRE_LIB ${ORYX_SUBSYSTEM_LIB_DIR}/${LIB_PREFIX}OgreSubsystem${LIB_POSTFIX})
+set(SDL_LIB ${ORYX_SUBSYSTEM_LIB_DIR}/${LIB_PREFIX}SDLSubsystem${LIB_POSTFIX})
+set(OIS_LIB ${ORYX_SUBSYSTEM_LIB_DIR}/${LIB_PREFIX}OISSubsystem${LIB_POSTFIX})
+set(KINECT_LIB ${ORYX_SUBSYSTEM_LIB_DIR}/${LIB_PREFIX}KinectSubsystem${LIB_POSTFIX})
+# freenect and boost
 set(FREENECT_LIB ${FREENECT_LIB_DIR}/${LIB_PREFIX}freenect${LIB_POSTFIX})
+set(BOOST_THREAD_LIB ${BOOST_LIB_DIR}/${LIB_PREFIX}boost_thread-mt${LIB_POSTFIX})
 
 # add the subsystem itself
 add_subdirectory(src/KinectSubsystem)
@@ -40,4 +54,4 @@ add_subdirectory(src/demo)
 add_subdirectory(src/demo_3d)
 
 # painter test thing
-#add_subdirectory(src/demo)
+#add_subdirectory(src/painter)

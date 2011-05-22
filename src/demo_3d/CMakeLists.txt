@@ -1,8 +1,8 @@
 # Build file for the Kinect Subsystem
 set(SUBSYSTEMS
-	OgreSubsystem
-	OISSubsystem
-	KinectSubsystem
+	${OGRE_LIB}
+	${KINECT_LIB}
+	${OIS_LIB}
 	)
 
 set(SOURCE_FILES

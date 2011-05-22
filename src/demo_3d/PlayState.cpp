@@ -43,7 +43,7 @@ namespace Oryx
 	void PlayState::update(Real delta)
 	{
 		mTimer+=delta;
-		if(mTimer > 1.f/30.f)
+		if(mTimer > 1.f)
 		{
 			mTimer = 0.f;
 			createPointCloud();
@@ -144,10 +144,19 @@ namespace Oryx
 			addVert(d, dl_pos); 
 			addVert(d, l_pos);*/
 
-			addVert(d,Kinect::getApproxPos(i,data[i]));
+			int x = i % 640;
+			int y = i / 640;
 
-			/*if(!((i % 480 > 479 || i / 480 > 639) && 
-				(i % 480 <= 0 || i / 480 <= 0)))
+			addVert(d,Kinect::getApproxPos(i,data[i]));
+			// get left, right
+			Vector3 pos1 = Kinect::getApproxPos(i-1,data[i-1]);// one to the left
+			Vector3 pos2 = Kinect::getApproxPos(i+640,data[i+640]);// one down
+			Vector3 normal = pos1.crossProduct(pos2);
+			normal.y = abs(normal.y);
+			std::cout<<normal.angleBetween(Vector3::UNIT_Y)<<"\n";
+
+			if(!((x >= 639 || x <= 0) && 
+				(!(y >= 479 || y <= 0))))
 			{
 				// try and see if this is a part of the ground plane...
 				d.diffuse.push_back(color[i*3]/255.f);
@@ -161,14 +170,14 @@ namespace Oryx
 				d.diffuse.push_back(1.f);
 				d.diffuse.push_back(1.f);
 				d.diffuse.push_back(1.f);
-			}*/
+			}
 			
 			//for(int j = 0; j < 6; ++j)
 			//{
-				d.diffuse.push_back(color[i*3]/255.f);
-				d.diffuse.push_back(color[i*3+1]/255.f);
-				d.diffuse.push_back(color[i*3+2]/255.f);
-				d.diffuse.push_back(1.f);
+				//d.diffuse.push_back(color[i*3]/255.f);
+				//d.diffuse.push_back(color[i*3+1]/255.f);
+				//d.diffuse.push_back(color[i*3+2]/255.f);
+				//d.diffuse.push_back(1.f);
 			//}
 		}
 

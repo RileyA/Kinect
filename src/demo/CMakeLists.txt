@@ -1,7 +1,7 @@
 # Build file for the Kinect Subsystem
 set(SUBSYSTEMS
-	SDLSubsystem
-	KinectSubsystem
+	${KINECT_LIB}
+	${SDL_LIB}
 	)
 
 set(SOURCE_FILES
