@@ -13,6 +13,11 @@ else ()
 endif ()
 
 # Some options:
+set(INSTALL_RUNTIMES_TO "/usr/bin" CACHE STRING "Where install executables.")
+set(INSTALL_LIBS_TO "/usr/lib" CACHE STRING "Where to install libs.")
+
+option(BUILD_2D_DEMO "Build the 2d raw output demo." TRUE)
+option(BUILD_3D_DEMO "Build 3d point cloud demo." TRUE)
 
 # freenect
 set(FREENECT_INCLUDE_DIR "/usr/include" CACHE STRING "Where to look for freenect includes.")
@@ -47,11 +52,16 @@ set(BOOST_THREAD_LIB ${BOOST_LIB_DIR}/${LIB_PREFIX}boost_thread-mt${LIB_POSTFIX}
 # add the subsystem itself
 add_subdirectory(src/KinectSubsystem)
 
-# the simple SDL demo
-add_subdirectory(src/demo)
+if (BUILD_2D_DEMO)
+	# the simple SDL demo
+	add_subdirectory(src/demo)
+endif ()
 
-# point cloud demo
-add_subdirectory(src/demo_3d)
+if (BUILD_3D_DEMO)
+	# point cloud demo
+	add_subdirectory(src/demo_3d)
+endif ()
 
 # painter test thing
 #add_subdirectory(src/painter)
+
