@@ -28,7 +28,6 @@ namespace Oryx
 		mDevice->setVideoEnabled(true);
 		mKinect->go();
 		//mDevice->setRGBDepthEnabled(true);
-
 		//mOgre->getRootSceneNode()->addChild(mOgre->createMesh("Frustum.mesh"));
 
 		mOgre->setBackgroundColor(Colour(0.3f,0.3f,0.4f));
@@ -48,13 +47,6 @@ namespace Oryx
 		{
 			mTimer = 0.f;
 			createPointCloud();
-			//k_depth dep = mDevice->getRawDepth()[640*240+320];
-			//k_depth dep2 = mDevice->getRawDepth()[640*240+50];
-			//k_depth dep3 = mDevice->getRawDepth()[640*240+590];
-			//std::cout<<"Depth: "<<dep2<<" "<<Kinect::getApproxDepth(dep2)*39.3700787<<"\n";
-			//std::cout<<"Depth: "<<dep<<" "<<Kinect::getApproxDepth(dep)*39.3700787<<"\n";
-			//std::cout<<"Depth: "<<dep3<<" "<<Kinect::getApproxDepth(dep3)*39.3700787<<"\n";
-			//std::cout<<"\n";
 		}
 
 		if(mOIS->wasKeyPressed("KC_1"))
@@ -79,6 +71,8 @@ namespace Oryx
 			createPointCloud(false);
 		if(mOIS->wasKeyPressed("KC_Q"))
 			createPointCloud();
+		if(mOIS->wasKeyPressed("KC_HOME"))
+			mOIS->toggleMouseGrab();
 		if(mOIS->wasKeyPressed("KC_ESCAPE"))
 		{
 			mKinect->stop();
@@ -120,6 +114,7 @@ namespace Oryx
 			if(data[i] > 2046)
 				continue;
 
+			// actual polygonal mesh (sloooow)
 			/*int left = data[i];
 			int right = data[i+1];
 			int d_left = data[i+640];
@@ -128,10 +123,10 @@ namespace Oryx
 			if(left > 2046 || right > 2046 || d_left > 2046 || d_right > 2046)
 				continue;
 
-			Vector3 l_pos = getPos(i, left);
-			Vector3 r_pos = getPos(i+1, right);
-			Vector3 dl_pos = getPos(i+640, d_left);
-			Vector3 dr_pos = getPos(i+641, d_right);
+			Vector3 l_pos = Kinect::getApproxPos(i, left);
+			Vector3 r_pos = Kinect::getApproxPos(i+1, right);
+			Vector3 dl_pos = Kinect::getApproxPos(i+640, d_left);
+			Vector3 dr_pos = Kinect::getApproxPos(i+641, d_right);
 
 			if(l_pos.squaredDistance(r_pos) > 0.1f ||
 				dl_pos.squaredDistance(dr_pos) > 0.1f ||
@@ -150,14 +145,31 @@ namespace Oryx
 			addVert(d, l_pos);*/
 
 			addVert(d,Kinect::getApproxPos(i,data[i]));
-			
-			for(int j = 0; j < 1; ++j)
+
+			/*if(!((i % 480 > 479 || i / 480 > 639) && 
+				(i % 480 <= 0 || i / 480 <= 0)))
 			{
+				// try and see if this is a part of the ground plane...
 				d.diffuse.push_back(color[i*3]/255.f);
 				d.diffuse.push_back(color[i*3+1]/255.f);
 				d.diffuse.push_back(color[i*3+2]/255.f);
 				d.diffuse.push_back(1.f);
 			}
+			else
+			{
+				d.diffuse.push_back(1.f);
+				d.diffuse.push_back(1.f);
+				d.diffuse.push_back(1.f);
+				d.diffuse.push_back(1.f);
+			}*/
+			
+			//for(int j = 0; j < 6; ++j)
+			//{
+				d.diffuse.push_back(color[i*3]/255.f);
+				d.diffuse.push_back(color[i*3+1]/255.f);
+				d.diffuse.push_back(color[i*3+2]/255.f);
+				d.diffuse.push_back(1.f);
+			//}
 		}
 
 		if(!mMesh)
@@ -165,7 +177,6 @@ namespace Oryx
 			mMesh = mOgre->createMesh(d);
 			mOgre->getRootSceneNode()->addChild(mMesh);
 			mMesh->setMaterialName("cloud");
-			//mMesh->yaw(180.f);
 		}
 		else
 		{

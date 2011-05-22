@@ -10,7 +10,7 @@ public:
 		:mColorTimestamp(0)
 		,mDepthTimestamp(0)
 	{
-		memset(drawn,0,sizeof(drawn));
+		//memset(drawn,0,sizeof(drawn));
 		mKinect = mEngine->getSubsystem("KinectSubsystem")->castType<KinectSubsystem>();
 		mSDL = mEngine->getSubsystem("SDLSubsystem")->castType<SDLSubsystem>();
 	}
@@ -31,7 +31,7 @@ public:
 		mDevice->setVideoEnabled(true);
 
 		// enable the special depth rgb stream
-		//mDevice->setRGBDepthEnabled(true);
+		mDevice->setRGBDepthEnabled(true);
 
 		mKinect->go();
 	}
@@ -44,21 +44,21 @@ public:
 	virtual void update(Real delta)
 	{
 		bool surfaceDirty = false;
-		//sleep(1);
 
 		if(mColorTimestamp != mDevice->getColorTimestamp())
 		{
-			//mColorTimestamp = mDevice->getColorTimestamp();
-			//mSDL->drawRaw(mDevice->getRawColor(),640,0);
-			//surfaceDirty = true;
+			mColorTimestamp = mDevice->getColorTimestamp();
+			mSDL->drawRaw(mDevice->getRawColor(),640,0);
+			surfaceDirty = true;
 		}
 		if(mDepthTimestamp != mDevice->getDepthTimestamp())
 		{
 			mDepthTimestamp = mDevice->getDepthTimestamp();
-			k_depth* depth = mDevice->getRawDepth();
-			// 
+			mSDL->drawRaw(mDevice->getRGBDepth(),0,0);
 			surfaceDirty = true;
-			mSDL->lock();
+
+			// painting experiment:
+			/*mSDL->lock();
 
 			for(int i = 0; i<640*480; ++i)
 			{
@@ -81,14 +81,14 @@ public:
 				}
 			}
 
-			mSDL->unlock();
+			mSDL->unlock();*/
 		}
 
 		if(surfaceDirty)
 			mSDL->flip();// flip the buffers
 
 		// exit after 30secs, since I don't have any input set up...
-		if(TimeManager::getPtr()->getTimeDecimal() > 50.f)
+		if(TimeManager::getPtr()->getTimeDecimal() > 10.f)
 		{
 			mEngine->endCurrentState();
 			mKinect->stop();
@@ -104,7 +104,7 @@ private:
 	uint32_t mColorTimestamp;
 	uint32_t mDepthTimestamp;
 
-	byte drawn[640*480];
+	//byte drawn[640*480];
 
 };
 
