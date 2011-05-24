@@ -33,6 +33,9 @@ namespace Oryx
 		mOgre->setBackgroundColor(Colour(0.3f,0.3f,0.4f));
 
 		mCamera = new FPSCamera();
+
+		Light* l = mOgre->createLight();
+		mOgre->getRootSceneNode()->addChild(l);
 	}
 
 	void PlayState::deinit()
@@ -67,8 +70,8 @@ namespace Oryx
 			mDevice->setTiltAngle(mAngle);
 		}
 
-		if(mOIS->wasKeyPressed("KC_P"))
-			createPointCloud(false);
+		//if(mOIS->wasKeyPressed("KC_P"))
+		//	createPointCloud(false);
 		if(mOIS->wasKeyPressed("KC_Q"))
 			createPointCloud();
 		if(mOIS->wasKeyPressed("KC_HOME"))
@@ -114,14 +117,54 @@ namespace Oryx
 			if(data[i] > 2046)
 				continue;
 
-			addVert(d,Kinect::getApproxPos(i,data[i]));
-			d.diffuse.push_back(color[i*3]/255.f);
-			d.diffuse.push_back(color[i*3+1]/255.f);
-			d.diffuse.push_back(color[i*3+2]/255.f);
-			d.diffuse.push_back(1.f);
+			/*int x = i % 640;
+			int y = i / 640;
 
-			/* Alternate: make an actual polygonal mesh
-			int left = data[i];
+			if(x >= 1 && x <= 638 && y <= 478 && y >= 238)
+			{
+				// get two adjacent points
+				Vector3 pos1 = Kinect::getApproxPos(i+1,data[i+1]);
+				Vector3 pos2 = Kinect::getApproxPos(i+640,data[i+640]);
+				Vector3 center = Kinect::getApproxPos(i,data[i]);
+				
+				// get vectors from the center to them
+				Vector3 d1 = pos1 - center;
+				Vector3 d2 = pos2 - center;
+
+				// get a normal
+				Vector3 normal = d1.crossProduct(d2);
+				normal.normalize();
+				normal.y = -normal.y;
+
+				addVert(d,center);
+
+				if(normal.angleBetween(Vector3::UNIT_Y) < 40.f)
+				{
+					d.diffuse.push_back(1.f);
+					d.diffuse.push_back(0.f);
+					d.diffuse.push_back(0.f);
+					d.diffuse.push_back(1.f);
+				}
+				else
+				{
+					d.diffuse.push_back(color[i*3]/255.f);
+					d.diffuse.push_back(color[i*3+1]/255.f);
+					d.diffuse.push_back(color[i*3+2]/255.f);
+					d.diffuse.push_back(1.f);
+				//}
+			}
+			else
+			{*/
+				addVert(d,Kinect::getApproxPos(i,data[i]));
+				d.diffuse.push_back(color[i*3]/255.f);
+				d.diffuse.push_back(color[i*3+1]/255.f);
+				d.diffuse.push_back(color[i*3+2]/255.f);
+				d.diffuse.push_back(1.f);
+			//}
+
+
+			// Alternate: make an actual polygonal mesh
+			/*int left = data[i];
 			int right = data[i+1];
 			int d_left = data[i+640];
 			int d_right = data[i+641];
@@ -148,15 +191,25 @@ namespace Oryx
 			// tri 2
 			addVert(d, dr_pos);
 			addVert(d, dl_pos); 
-			addVert(d, l_pos);
+			addVert(d, l_pos);*/
 			
-			for(int j = 0; j < 6; ++j)
-			{
-				d.diffuse.push_back(color[i*3]/255.f);
-				d.diffuse.push_back(color[i*3+1]/255.f);
-				d.diffuse.push_back(color[i*3+2]/255.f);
-				d.diffuse.push_back(1.f);
-			}*/
+			//for(int j = 0; j < 6; ++j)
+			//{
+				/*if(floor_)
+				{
+					d.diffuse.push_back(1.f);
+					d.diffuse.push_back(0.f);
+					d.diffuse.push_back(0.f);
+					d.diffuse.push_back(1.f);
+				}
+				else
+				{*/
+				//	d.diffuse.push_back(color[i*3]/255.f);
+				//	d.diffuse.push_back(color[i*3+1]/255.f);
+				//	d.diffuse.push_back(color[i*3+2]/255.f);
+			//		d.diffuse.push_back(1.f);
+				//}
+			//}
 		}
 
 		if(!mMesh)
